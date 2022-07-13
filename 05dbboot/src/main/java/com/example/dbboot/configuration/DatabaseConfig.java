@@ -38,20 +38,20 @@ public class DatabaseConfig extends AbstractCloudConfig {
 	//
 	Logger cloudFoundryDataSourceConfigLogger = LoggerFactory.getLogger(this.getClass());
 	
-	@Value("${vcap.services.mysql.credentials.username}")
+	@Value("${vcap.services.hana_schema.credentials.user}")
 	private String username;
 
-	@Value("${vcap.services.mysql.credentials.password}")
+	@Value("${vcap.services.hana_schema.credentials.password}")
 	private String password;
 	
-	@Value("${vcap.services.mysql.credentials.hostname}")
+	@Value("${vcap.services.hana_schema.credentials.url}")
 	private String hostname;
 	
-	@Value("${vcap.services.mysql.credentials.port}")
+	@Value("${vcap.services.hana_schema.credentials.port}")
 	private String port;
 	
-	@Value("${vcap.services.mysql.credentials.dbname}")
-	private String dbname;	
+	@Value("${vcap.services.hana_schema.credentials.schema}")
+	private String schemaname;	
 	
     @Bean
     public DataSource dataSource() {
@@ -66,30 +66,30 @@ public class DatabaseConfig extends AbstractCloudConfig {
                 "TomcatJdbcPooledDataSourceCreator", "HikariCpPooledDataSourceCreator",
                 "TomcatDbcpPooledDataSourceCreator");
         
-        DataSourceConfig dbConfig = new DataSourceConfig(dataSourceNames);
-        DataSource hikariDataSource =  connectionFactory().dataSource(dbConfig);
-//        DataSource myConnection = DataSourceBuilder.create()
-//        						  .type(HikariDataSource.class)
-//        						  .driverClassName(com.sap.db.jdbc.Driver.class.getName())
-//        						  .url(hostname)
-//        						  .username(username)
-//        						  .password(password)
-//        						  .build();
-//        
-//        try {
-//			myConnection.getConnection().setSchema(dbname);
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+        //DataSourceConfig dbConfig = new DataSourceConfig(dataSourceNames);
+        //DataSource hikariDataSource =  connectionFactory().dataSource(dbConfig);
+        DataSource myConnection = DataSourceBuilder.create()
+        						  .type(HikariDataSource.class)
+        						  .driverClassName(com.sap.db.jdbc.Driver.class.getName())
+        						  .url(hostname)
+        						  .username(username)
+        						  .password(password)
+        						  .build();
+        
+        try {
+			myConnection.getConnection().setSchema(schemaname);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         
         cloudFoundryDataSourceConfigLogger.info("Detected Host name is : " + this.hostname);
         cloudFoundryDataSourceConfigLogger.info("Detected port name is : " + this.port);
-        cloudFoundryDataSourceConfigLogger.info("Detected Schema name is : " + this.dbname);
+        cloudFoundryDataSourceConfigLogger.info("Detected Schema name is : " + this.schemaname);
         cloudFoundryDataSourceConfigLogger.info("Detected User name is : " + this.username);
         
-        return hikariDataSource;
-        
+        //return hikariDataSource;
+        return myConnection;
     }
 
     /**
